@@ -1,4 +1,8 @@
+package graphql;
+
 import com.coxautodev.graphql.tools.GraphQLRootResolver;
+import data.model.Link;
+import data.repository.LinkRepository;
 
 import java.util.List;
 
