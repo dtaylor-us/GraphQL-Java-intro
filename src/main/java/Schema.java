@@ -1,21 +1,25 @@
 import graphql.schema.GraphQLObjectType;
 import graphql.schema.GraphQLSchema;
-import graphql.servlet.SimpleGraphQLServlet;
-
-import javax.servlet.annotation.WebServlet;
 
 import static graphql.Scalars.GraphQLString;
 import static graphql.schema.GraphQLFieldDefinition.newFieldDefinition;
 import static graphql.schema.GraphQLObjectType.newObject;
 
-@WebServlet(urlPatterns = "/graphql")
-public class GraphQLEndpoint extends SimpleGraphQLServlet {
+public class Schema {
 
-    public GraphQLEndpoint() {
-        super(buildSchema());
+
+    private Schema schema;
+    public Schema getSchema() {
+        return schema;
     }
 
-    private static GraphQLSchema buildSchema() {
+    public Schema() {
+        createSchema();
+    }
+
+
+    private void createSchema() {
+
         GraphQLObjectType queryType = newObject()
                 .name("helloWorldQuery")
                 .field(newFieldDefinition()
@@ -24,15 +28,8 @@ public class GraphQLEndpoint extends SimpleGraphQLServlet {
                         .staticValue("world"))
                 .build();
 
-        return GraphQLSchema.newSchema()
+        GraphQLSchema.newSchema()
                 .query(queryType)
                 .build();
-//        LinkRepository linkRepository = new LinkRepository();
-//        return SchemaParser.newParser()
-//                .file("schema.graphqls")
-//                .resolvers(new Query(linkRepository))
-//                .build()
-//                .makeExecutableSchema();
     }
-
 }
