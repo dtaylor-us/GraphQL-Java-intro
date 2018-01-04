@@ -1,8 +1,12 @@
+import graphql.schema.GraphQLFieldDefinition;
 import graphql.schema.GraphQLObjectType;
+import graphql.schema.GraphQLScalarType;
 import graphql.schema.GraphQLSchema;
 import graphql.servlet.SimpleGraphQLServlet;
 
 import javax.servlet.annotation.WebServlet;
+
+import java.util.List;
 
 import static graphql.Scalars.GraphQLString;
 import static graphql.schema.GraphQLFieldDefinition.newFieldDefinition;
@@ -16,17 +20,34 @@ public class GraphQLEndpoint extends SimpleGraphQLServlet {
     }
 
     private static GraphQLSchema buildSchema() {
-        GraphQLObjectType queryType = newObject()
-                .name("helloWorldQuery")
+        //CREATE LINK TYPE
+        GraphQLObjectType link = newObject()
+                .name("Link")
                 .field(newFieldDefinition()
+                        .name("url")
                         .type(GraphQLString)
-                        .name("hello")
-                        .staticValue("world"))
+                        .build())
+                .field(newFieldDefinition()
+                        .name("description")
+                        .type(GraphQLString)
+                        .build())
                 .build();
 
+        //CREATE QUERY TYPE
+        GraphQLObjectType queryType = newObject()
+                .name("Query")
+                .fields(newFieldDefinition()
+                        .name("allLinks")
+                        .dataFetcher(environment -> {
+
+                }))
+                .build();
+
+        //ADD ALL LINKS QUERY
         return GraphQLSchema.newSchema()
                 .query(queryType)
                 .build();
+
 //        LinkRepository linkRepository = new LinkRepository();
 //        return SchemaParser.newParser()
 //                .file("schema.graphqls")
