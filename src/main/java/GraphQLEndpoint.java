@@ -1,18 +1,14 @@
 import graphql.schema.DataFetcher;
 import graphql.schema.DataFetchingEnvironment;
-import graphql.schema.GraphQLFieldDefinition;
 import graphql.schema.GraphQLList;
 import graphql.schema.GraphQLObjectType;
-import graphql.schema.GraphQLScalarType;
 import graphql.schema.GraphQLSchema;
 import graphql.servlet.SimpleGraphQLServlet;
 
 import javax.servlet.annotation.WebServlet;
 
-import java.util.List;
-
 import static graphql.Scalars.GraphQLString;
-import static graphql.schema.GraphQLList.list;
+import static graphql.schema.GraphQLArgument.newArgument;
 import static graphql.schema.GraphQLFieldDefinition.newFieldDefinition;
 import static graphql.schema.GraphQLObjectType.newObject;
 
@@ -26,7 +22,7 @@ public class GraphQLEndpoint extends SimpleGraphQLServlet {
     private static GraphQLSchema buildSchema() {
         LinkRepository linkRepository = new LinkRepository();
 
-
+        // DATA FETCHER FOR QUERY
         DataFetcher linksDataFetcher = new DataFetcher() {
             @Override
             public Object get(DataFetchingEnvironment environment) {
@@ -34,6 +30,17 @@ public class GraphQLEndpoint extends SimpleGraphQLServlet {
             }
         };
 
+        // DATA FETCHER FOR MUTATION
+        DataFetcher createLinkDataFetcher = new DataFetcher() {
+            @Override
+            public Object get(DataFetchingEnvironment environment) {
+                String url = environment.getArgument("url");
+                String description = environment.getArgument("description");
+                Link newLink = new Link(url, description);
+                linkRepository.saveLink(newLink);
+                return newLink;
+            }
+        };
 
         //CREATE LINK TYPE
         GraphQLObjectType link = newObject()
@@ -49,14 +56,6 @@ public class GraphQLEndpoint extends SimpleGraphQLServlet {
                 .build();
 
         //CREATE QUERY TYPE
-//        GraphQLObjectType queryType = newObject()
-//                .name("Query")
-//                .field(newFieldDefinition()
-//                        .name("allLinks")
-//                        .dataFetcher(linksDataFetcher)
-//                        .type(new GraphQLList(link))
-//                .build());
-
          GraphQLObjectType queryType = newObject()
                 .name("Query")
                 .field(newFieldDefinition()
@@ -65,17 +64,26 @@ public class GraphQLEndpoint extends SimpleGraphQLServlet {
                         .dataFetcher(linksDataFetcher))
                 .build();
 
-        //ADD ALL LINKS QUERY
-        return GraphQLSchema.newSchema()
-                .query(queryType)
+        //CREATE MUTATION TYPE
+        GraphQLObjectType mutationType = newObject()
+                .name("Mutation")
+                .field(newFieldDefinition()
+                        .name("createLink")
+                        .type(link)
+                        .argument(newArgument()
+                                .name("url")
+                                .type(GraphQLString))
+                        .argument(newArgument()
+                                .name("description")
+                                .type(GraphQLString))
+                        .dataFetcher(createLinkDataFetcher))
                 .build();
 
-//        LinkRepository linkRepository = new LinkRepository();
-//        return SchemaParser.newParser()
-//                .file("schema.graphqls")
-//                .resolvers(new Query(linkRepository))
-//                .build()
-//                .makeExecutableSchema();
+        //CREATE SCHEMA FROM TYPES
+        return GraphQLSchema.newSchema()
+                .query(queryType)
+                .mutation(mutationType)
+                .build();
     }
 
 }
