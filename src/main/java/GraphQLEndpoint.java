@@ -1,5 +1,7 @@
+import graphql.language.FieldDefinition;
 import graphql.schema.DataFetcher;
 import graphql.schema.DataFetchingEnvironment;
+import graphql.schema.GraphQLFieldDefinition;
 import graphql.schema.GraphQLList;
 import graphql.schema.GraphQLObjectType;
 import graphql.schema.GraphQLSchema;
@@ -55,13 +57,17 @@ public class GraphQLEndpoint extends SimpleGraphQLServlet {
                         .build())
                 .build();
 
+        //AGGREGATE LINKS INTO COLLECTION
+        GraphQLFieldDefinition allLinks = newFieldDefinition()
+                .name("allLinks")
+                .type(new GraphQLList(link))
+                .dataFetcher(linksDataFetcher)
+                .build();
+
         //CREATE QUERY TYPE
-         GraphQLObjectType queryType = newObject()
+        GraphQLObjectType queryType = newObject()
                 .name("Query")
-                .field(newFieldDefinition()
-                        .name("allLinks")
-                        .type(new GraphQLList(link))
-                        .dataFetcher(linksDataFetcher))
+                .field(allLinks)
                 .build();
 
         //CREATE MUTATION TYPE
